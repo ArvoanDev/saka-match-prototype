@@ -1,0 +1,559 @@
+<!doctype html>
+<html lang="fi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Saka Match - Löydä elämäsi auto</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
+
+      body {
+        font-family: "Inter", sans-serif;
+        background-color: #f9fafb;
+      }
+
+      /* Custom SAKA Colors */
+      .text-saka-orange {
+        color: #f08826;
+      }
+      .bg-saka-orange {
+        background-color: #f08826;
+      }
+      .border-saka-orange {
+        border-color: #f08826;
+      }
+      .hover\:bg-saka-orange-dark:hover {
+        background-color: #d6761b;
+      }
+
+      .saka-shadow {
+        box-shadow:
+          0 4px 6px -1px rgba(0, 0, 0, 0.05),
+          0 2px 4px -1px rgba(0, 0, 0, 0.03);
+      }
+
+      /* Animations */
+      .fade-in {
+        animation: fadeIn 0.4s ease-in-out;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .loader {
+        border: 4px solid #f3f3f3;
+        border-radius: 50%;
+        border-top: 4px solid #f08826;
+        width: 40px;
+        height: 40px;
+        -webkit-animation: spin 1s linear infinite; /* Safari */
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+  </head>
+  <body class="flex flex-col min-h-screen text-gray-800">
+    <!-- Navigation (Simulated) -->
+    <nav class="bg-white border-b border-gray-200 sticky top-0 z-50">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-16">
+          <div class="flex items-center cursor-pointer" onclick="resetApp()">
+            <!-- SAKA Logo Approximation -->
+            <div class="flex items-center gap-1">
+              <img
+                src="https://upload.wikimedia.org/wikipedia/fi/2/24/Saka_logo.svg"
+                alt="SAKA Logo"
+                class="h-8 w-auto"
+              />
+            </div>
+          </div>
+          <div
+            class="hidden md:flex items-center space-x-8 text-sm font-medium text-gray-600"
+          >
+            <a href="#" class="hover:text-saka-orange">Vaihtoautot</a>
+            <a href="#" class="hover:text-saka-orange">Automerkit</a>
+            <a href="#" class="hover:text-saka-orange">Myy autosi</a>
+            <a
+              href="#"
+              class="text-saka-orange font-bold flex items-center gap-2"
+            >
+              <i class="fas fa-sparkles"></i> Saka Match
+            </a>
+          </div>
+          <div class="flex items-center space-x-4">
+            <button class="text-gray-400 hover:text-gray-600">
+              <i class="fas fa-search"></i>
+            </button>
+            <button class="text-gray-400 hover:text-gray-600">
+              <i class="far fa-user"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main
+      class="flex-grow flex flex-col items-center justify-start pt-8 pb-12 px-4 sm:px-6"
+    >
+      <!-- App Container -->
+      <div id="app" class="w-full max-w-5xl">
+        <!-- Content Injected via JS -->
+      </div>
+    </main>
+
+    <!-- Footer Simulation -->
+    <footer class="bg-gray-900 text-white py-12">
+      <div class="max-w-7xl mx-auto px-4 text-center">
+        <img
+          src="https://upload.wikimedia.org/wikipedia/fi/2/24/Saka_logo.svg"
+          alt="SAKA Logo"
+          class="h-10 w-auto mx-auto mb-4"
+        />
+        <p class="text-gray-400 text-sm">&copy; Saka Finland Oy 2026</p>
+      </div>
+    </footer>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+      // --- DATA ---
+
+      const lifestyles = [
+        {
+          id: "first_car",
+          icon: "fa-home",
+          title: "Ensiasunto & Ensiauto",
+          desc: "Kun budjetti on tiukka mutta laadusta ei tingitä.",
+          tags: ["compact", "cheap", "gas"],
+          aiPrompt:
+            "Tämä on optimoitu pienelle budjetille ja matalille vakuutusmaksuille.",
+        },
+        {
+          id: "dog_owner",
+          icon: "fa-dog",
+          title: "Koiratalous",
+          desc: "Tilaa harrastuksille, häkeille ja kuraisille tassuille.",
+          tags: ["wagon", "suv", "big_trunk"],
+          aiPrompt:
+            "Tässä mallissa on kestävä verhoilu ja matala lastauskynnys lemmikille.",
+        },
+        {
+          id: "commuter",
+          icon: "fa-briefcase",
+          title: "Työmatkajyrä",
+          desc: "Kun vietät ratissa paljon aikaa ja arvostat mukavuutta.",
+          tags: ["diesel", "hybrid", "sedan", "comfort"],
+          aiPrompt:
+            "Ergonomiset istuimet ja adaptiivinen vakionopeudensäädin tekevät matkasta juhlaa.",
+        },
+        {
+          id: "towing",
+          icon: "fa-trailer",
+          title: "Veturi & Vapaa-aika",
+          desc: "Voimaa vetää venettä, vaunua tai muuttokuormaa.",
+          tags: ["awd", "suv", "hook"],
+          aiPrompt:
+            "Korkea vetomassa ja neliveto takaavat, että kärry liikkuu säällä kuin säällä.",
+        },
+      ];
+
+      // Mock Database of Cars
+      const carDatabase = [
+        {
+          id: 1,
+          make: "Volvo",
+          model: "V60",
+          spec: "D4 AWD Momentum Aut",
+          price: 24900,
+          monthly: 320,
+          year: 2019,
+          km: 145000,
+          image:
+            "https://images.ctfassets.net/rjpp1vai5vu3/4YZlXejOUReDoXvcdnITIE/234b221d146d6d13a34f0eb2d98a8a9f/4YHVwucuuBg8wIJhC15qVD-36-1971-1.jpg?fm=webp&w=980&q=75&fit=fill",
+          tags: ["wagon", "awd", "diesel", "hook", "big_trunk"],
+          matches: ["dog_owner", "commuter", "towing"],
+        },
+        {
+          id: 2,
+          make: "Toyota",
+          model: "Yaris",
+          spec: "1.5 Hybrid Active",
+          price: 18500,
+          monthly: 210,
+          year: 2021,
+          km: 45000,
+          image:
+            "https://images.ctfassets.net/rjpp1vai5vu3/UL2FA0zgcUlTkGtFPm7zL/b3a8f9c5de51e56b48e3c70c702dfb42/2FoiG95U9oDYpGOGRuPrYZ-35-8755-1.jpg?fm=webp&w=980&q=75&fit=fill",
+          tags: ["compact", "hybrid", "cheap"],
+          matches: ["first_car", "commuter"],
+        },
+        {
+          id: 3,
+          make: "Tesla",
+          model: "Model Y",
+          spec: "Long Range Dual Motor",
+          price: 30800,
+          monthly: 299,
+          year: 2022,
+          km: 95000,
+          image:
+            "https://images.ctfassets.net/rjpp1vai5vu3/5BQKaTrpDLNwUySUGUk57G/b7628cea32acee7b11d006fd9a1e798c/5jU5Edqjtza4QcUEHY7z2o-36-1308-1.jpg?fm=webp&w=980&q=75&fit=fill",
+          tags: ["suv", "electric", "awd", "tech"],
+          matches: ["commuter", "dog_owner"],
+        },
+        {
+          id: 4,
+          make: "Mercedes-Benz",
+          model: "GLE",
+          spec: "350 de 4MATIC",
+          price: 47700,
+          monthly: 449,
+          year: 2021,
+          km: 157000,
+          image:
+            "https://images.ctfassets.net/rjpp1vai5vu3/5ckOYj7KbnQ7iWO4sSUBVH/75024ef8284d6937ab55f51a4f4ddf2e/4lbStL1PQfSFdB0ml43cKK-35-8465-1.jpg?fm=webp&w=980&q=75&fit=fill",
+          tags: ["suv", "hybrid", "awd", "hook", "luxury"],
+          matches: ["towing", "dog_owner"],
+        },
+        {
+          id: 5,
+          make: "Volkswagen",
+          model: "Golf",
+          spec: "1.0 TSI Comfortline",
+          price: 13900,
+          monthly: 149,
+          year: 2018,
+          km: 158000,
+          image:
+            "https://images.ctfassets.net/rjpp1vai5vu3/4jMSuIuIQWb3kiy7pGCPBY/8d1d5df0d1d279a5316794c1283c2f5d/6AO5y3dS0pvo78G7ibRBZI-33-1577-1.jpg?fm=webp&w=980&q=75&fit=fill",
+          tags: ["compact", "gas", "cheap"],
+          matches: ["first_car"],
+        },
+      ];
+      // --- STATE MANAGEMENT ---
+      let state = {
+        step: 1, // 1: Lifestyle, 2: Preferences, 3: Loading, 4: Results
+        selectedLifestyle: null,
+        preferences: {
+          power: "any", // electric, fossil, any
+          usage: "mixed", // city, highway, mixed
+        },
+      };
+
+      const appContainer = document.getElementById("app");
+
+      // --- RENDER FUNCTIONS ---
+
+      function init() {
+        renderLifestyleStep();
+      }
+
+      function resetApp() {
+        state.step = 1;
+        state.selectedLifestyle = null;
+        renderLifestyleStep();
+      }
+
+      // STEP 1: Lifestyle Selection
+      function renderLifestyleStep() {
+        let html = `
+                <div class="text-center mb-10 fade-in">
+                    <h1 class="text-3xl md:text-4xl font-extrabold text-gray-900 mb-4">
+                        Millainen auto sopii <span class="text-saka-orange">arkeesi?</span>
+                    </h1>
+                    <p class="text-gray-500 max-w-2xl mx-auto text-lg">
+                        Kerro meille hieman itsestäsi, niin Saka AI etsii sinulle sopivat kumppanit tuhansien vaihtoehtojen joukosta.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 fade-in">
+                    ${lifestyles
+                      .map(
+                        (style) => `
+                        <button onclick="selectLifestyle('${style.id}')" 
+                                class="group relative flex flex-col items-center justify-center p-8 bg-white border-2 border-transparent hover:border-saka-orange rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 h-64 text-center">
+                            <div class="w-16 h-16 bg-orange-50 text-saka-orange rounded-full flex items-center justify-center text-3xl mb-6 group-hover:scale-110 transition-transform">
+                                <i class="fas ${style.icon}"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-900 mb-2 group-hover:text-saka-orange transition-colors">${style.title}</h3>
+                            <p class="text-sm text-gray-500 leading-relaxed">${style.desc}</p>
+                            
+                            <!-- Checkmark for active state imitation -->
+                            <div class="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity text-saka-orange">
+                                <i class="fas fa-check-circle text-xl"></i>
+                            </div>
+                        </button>
+                    `,
+                      )
+                      .join("")}
+                </div>
+            `;
+        appContainer.innerHTML = html;
+      }
+
+      // STEP 2: Preferences
+      function renderPreferenceStep() {
+        const lifestyle = lifestyles.find(
+          (l) => l.id === state.selectedLifestyle,
+        );
+
+        let html = `
+                <div class="max-w-2xl mx-auto fade-in">
+                    <button onclick="resetApp()" class="text-gray-400 hover:text-gray-600 mb-6 flex items-center gap-2">
+                        <i class="fas fa-arrow-left"></i> Palaa alkuun
+                    </button>
+
+                    <div class="bg-white rounded-3xl p-8 shadow-lg border border-gray-100">
+                        <div class="flex items-center gap-4 mb-8 pb-6 border-b border-gray-100">
+                            <div class="w-12 h-12 bg-saka-orange text-white rounded-full flex items-center justify-center text-xl">
+                                <i class="fas ${lifestyle.icon}"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-2xl font-bold text-gray-900">Mitä arvostat eniten?</h2>
+                                <p class="text-gray-500">Teema: ${lifestyle.title}</p>
+                            </div>
+                        </div>
+
+                        <!-- Question 1 -->
+                        <div class="mb-8">
+                            <label class="block text-sm font-bold text-gray-700 mb-3">Millä energialla haluat liikkua?</label>
+                            <div class="grid grid-cols-3 gap-3">
+                                ${renderToggleOption("power", "electric", "Sähkö/Hybridi", "fa-bolt")}
+                                ${renderToggleOption("power", "fossil", "Bensa/Diesel", "fa-gas-pump")}
+                                ${renderToggleOption("power", "any", "Ei väliä", "fa-random")}
+                            </div>
+                        </div>
+
+                        <!-- Question 2 -->
+                        <div class="mb-8">
+                            <label class="block text-sm font-bold text-gray-700 mb-3">Missä kilometrisi kertyvät?</label>
+                            <div class="bg-gray-100 p-1 rounded-xl flex relative">
+                                <div id="slider-bg" class="absolute h-full w-1/3 bg-white rounded-lg shadow-sm transition-all duration-300 top-0 left-0 m-0"></div>
+                                ${renderSliderOption("usage", "city", "Kaupungissa")}
+                                ${renderSliderOption("usage", "mixed", "Sekalainen")}
+                                ${renderSliderOption("usage", "highway", "Maantiellä")}
+                            </div>
+                        </div>
+
+                        <button onclick="startMatching()" class="w-full bg-saka-orange hover:bg-saka-orange-dark text-white font-bold text-lg py-4 rounded-xl shadow-lg transform active:scale-95 transition-all flex items-center justify-center gap-3">
+                            <span>Näytä suositukseni</span>
+                            <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+        appContainer.innerHTML = html;
+        updateSliderPosition();
+      }
+
+      // Helper for Step 2 Buttons
+      function renderToggleOption(key, value, label, icon) {
+        const isActive = state.preferences[key] === value;
+        const borderClass = isActive
+          ? "border-saka-orange bg-orange-50 text-saka-orange"
+          : "border-gray-200 hover:border-gray-300 text-gray-600";
+
+        return `
+                <button onclick="setPreference('${key}', '${value}')" class="border-2 rounded-xl py-3 px-2 flex flex-col items-center justify-center gap-2 transition-all ${borderClass}">
+                    <i class="fas ${icon} text-lg"></i>
+                    <span class="text-sm font-medium">${label}</span>
+                </button>
+            `;
+      }
+
+      function renderSliderOption(key, value, label) {
+        const isActive = state.preferences[key] === value;
+        const textClass = isActive
+          ? "text-gray-900 font-bold"
+          : "text-gray-500 font-medium";
+        return `
+                <button onclick="setPreference('${key}', '${value}')" class="flex-1 py-3 relative z-10 text-sm transition-colors ${textClass}">
+                    ${label}
+                </button>
+            `;
+      }
+
+      // STEP 3: Loading Screen
+      function renderLoadingStep() {
+        let html = `
+                <div class="min-h-[400px] flex flex-col items-center justify-center fade-in text-center">
+                    <div class="loader mb-6"></div>
+                    <h2 class="text-2xl font-bold text-gray-900 mb-2">Etsitään täydellistä kumppania...</h2>
+                    <p id="loading-text" class="text-gray-500">Huomioidaan toiveesi...</p>
+                </div>
+            `;
+        appContainer.innerHTML = html;
+
+        // Simulate AI steps
+        setTimeout(() => {
+          document.getElementById("loading-text").innerText =
+            "Käydään läpi tuhansia vaihtoehtoja...";
+        }, 800);
+        setTimeout(() => {
+          document.getElementById("loading-text").innerText =
+            "Valitaan parhaat yksilöt...";
+        }, 1600);
+        setTimeout(() => {
+          renderResultsStep();
+        }, 2400);
+      }
+
+      // STEP 4: Results
+      function renderResultsStep() {
+        const matches = getMatches();
+        const lifestyleData = lifestyles.find(
+          (l) => l.id === state.selectedLifestyle,
+        );
+
+        let html = `
+                <div class="fade-in">
+                    <div class="flex items-center justify-between mb-6">
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-900">Nämä autot sopivat juuri sinulle</h2>
+                            <p class="text-gray-500">Perustuu valintaasi: <span class="font-semibold text-saka-orange">${lifestyleData.title}</span></p>
+                        </div>
+                        <button onclick="resetApp()" class="text-sm text-gray-500 hover:text-saka-orange underline">Aloita uusi haku</button>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        ${matches
+                          .map((car, index) => {
+                            // Determine match percentage based on index (fake logic for demo)
+                            const matchPercent = 98 - index * 4;
+                            return `
+                            <div class="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition-shadow flex flex-col border border-gray-100">
+                                <div class="relative h-48 bg-gray-200">
+                                    <img src="${car.image}" alt="${car.make}" class="w-full h-full object-cover">
+                                    <div class="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-saka-orange shadow-sm flex items-center gap-1">
+                                        <i class="fas fa-bullseye"></i> ${matchPercent}% Match
+                                    </div>
+                                    <div class="absolute bottom-3 left-3 bg-gray-900/80 backdrop-blur-sm text-white px-2 py-1 rounded text-xs">
+                                        ${car.year} • ${car.km.toLocaleString()} km
+                                    </div>
+                                </div>
+                                
+                                <div class="p-5 flex-grow flex flex-col">
+                                    <h3 class="text-lg font-bold text-gray-900 leading-tight mb-1">${car.make} ${car.model}</h3>
+                                    <p class="text-sm text-gray-500 mb-4">${car.spec}</p>
+                                    
+                                    <!-- AI Insight Block -->
+                                    <div class="bg-orange-50 border-l-4 border-saka-orange p-3 rounded-r-lg mb-4">
+                                        <div class="flex items-start gap-2">
+                                            <i class="fas fa-sparkles text-saka-orange mt-1 text-xs"></i>
+                                            <div>
+                                                <p class="text-xs text-gray-800 italic">"${lifestyleData.aiPrompt}"</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="mt-auto pt-4 border-t border-gray-100 flex items-center justify-between">
+                                        <div>
+                                            <span class="block text-xs text-gray-400">Hinta</span>
+                                            <span class="font-bold text-gray-900">${car.price.toLocaleString()} €</span>
+                                        </div>
+                                        <div class="text-right">
+                                            <span class="block text-xs text-gray-400">Alk.</span>
+                                            <span class="font-bold text-saka-orange text-lg">${car.monthly} €<span class="text-xs text-gray-500 font-normal">/kk</span></span>
+                                        </div>
+                                    </div>
+                                    
+                                    <button class="mt-4 w-full bg-gray-900 text-white py-2 rounded-lg text-sm font-semibold hover:bg-saka-orange transition-colors">
+                                        Tutustu autoon
+                                    </button>
+                                </div>
+                            </div>
+                            `;
+                          })
+                          .join("")}
+                    </div>
+
+                    <div class="mt-12 text-center p-8 bg-white rounded-2xl border border-gray-200">
+                        <h3 class="font-bold text-gray-900 text-lg mb-2">Haluatko nähdä kaikki 983 autoa?</h3>
+                        <p class="text-gray-500 text-sm mb-4">Voit aina palata perinteiseen hakunäkymään.</p>
+                        <button class="text-saka-orange font-semibold hover:underline">Siirry kaikkiin vaihtoautoihin</button>
+                    </div>
+                </div>
+            `;
+        appContainer.innerHTML = html;
+      }
+
+      // --- LOGIC ACTIONS ---
+
+      window.selectLifestyle = function (id) {
+        state.selectedLifestyle = id;
+        state.step = 2;
+        renderPreferenceStep();
+      };
+
+      window.setPreference = function (key, value) {
+        state.preferences[key] = value;
+        renderPreferenceStep(); // Re-render to update UI state
+      };
+
+      window.startMatching = function () {
+        state.step = 3;
+        renderLoadingStep();
+      };
+
+      // Helper to move the slider bg in Step 2
+      function updateSliderPosition() {
+        const slider = document.getElementById("slider-bg");
+        if (!slider) return;
+
+        const positions = { city: "0%", mixed: "33.33%", highway: "66.66%" };
+        slider.style.left = positions[state.preferences.usage];
+      }
+
+      function getMatches() {
+        // Very simple filtering logic for the prototype
+        // In a real app, this would be an API call with complex weighting
+
+        let filtered = carDatabase.filter((car) => {
+          // 1. Must match lifestyle tag
+          const lifestyleMatch = car.matches.includes(state.selectedLifestyle);
+
+          // 2. Power preference
+          let powerMatch = true;
+          if (state.preferences.power === "electric") {
+            powerMatch =
+              car.tags.includes("electric") || car.tags.includes("hybrid");
+          } else if (state.preferences.power === "fossil") {
+            powerMatch =
+              car.tags.includes("gas") || car.tags.includes("diesel");
+          }
+
+          return lifestyleMatch && powerMatch;
+        });
+
+        // Fallback if filtering is too strict for this small dataset
+        if (filtered.length === 0) return carDatabase.slice(0, 3);
+
+        return filtered;
+      }
+
+      // Initialize
+      init();
+    </script>
+  </body>
+</html>
